@@ -1,0 +1,102 @@
+# Terraform-VirtualBox
+
+Terraform script through virtual Machine (VirtualBox & Vagrant)
+
+## Overview
+
+This project demonstrates using Terraform to provision users inside a local VirtualBox VM managed by Vagrant. It simulates AWS-style infrastructure provisioning without needing cloud accounts.
+
+---
+
+## Prerequisites
+
+- [VirtualBox](https://www.virtualbox.org/) installed
+- [Vagrant](https://www.vagrantup.com/) installed
+- [Terraform](https://www.terraform.io/) installed on your local machine
+- Git (for cloning the repo)
+
+---
+
+## Setup & Usage
+
+1. **Add Connection Data & Credentials:** Add a `terraform.tfvars` file in the root directory. Example below:
+
+    ```terraform
+    users = {
+        "alice" = {
+            username        = "alice"
+            ssh_public_key  = "keys/alice.pub"
+        },
+        "bob" = {
+            username        = "bob"
+            ssh_public_key  = "keys/bob.pub"
+        },
+        "charlie" = {
+            username        = "charlie"
+            ssh_public_key  = "keys/charlie.pub"
+        }
+    }    
+    host             = "127.0.0.1"
+    port             = 2222
+    user             = "vagrant"
+    private_key_path = "./.vagrant/machines/default/virtualbox/private_key"
+    ```
+
+1. **Start the VM:** ```vagrant up```
+
+1. **Initialize Terraform:** ```terraform init```
+
+1. **Apply the Terraform Configuration:** ```terraform apply```
+
+    - Review the plan, type `yes` to confirm.
+    - Terraform will SSH into the VM and create the user.
+
+1. **Verify the user inside the VM:**
+
+    ```bash
+    vagrant ssh
+    getent passwd terraform_user
+    ```
+
+## File Structure
+
+```bash
+.
+├── main.tf             # Root configuration that calls the user module
+├── variables.tf        # Root-level variables (passed into modules)
+├── outputs.tf          # (Optional) Re-exports module outputs
+├── terraform.tfvars    # (Optional) Actual values for root-level variables
+├── .terraform/         # Terraform state and provider plugin cache
+├── .vagrant/           # Vagrant state files
+├── Vagrantfile         # Defines the local VM environment
+├── scripts/            # Shell provisioning scripts (e.g., add users, install packages)
+│ ├── provision.sh
+│ └── generate_keys.sh  # Script to automatically generate users ssh keys (alice, bob, charlie)
+├── modules/            # Reusable Terraform modules
+│ └── user/             # User creation module
+│ ├── main.tf           # Logic for user provisioning
+│ ├── variables.tf      # Input variables for the module
+│ ├── outputs.tf        # Outputs exposed by the module
+├── terraform.tfstate   # Terraform state file (track real-world resources)
+├── .gitignore          # Prevents sensitive or system-specific files from being committed
+└── README.md
+```
+
+### Variable & Output Files
+
+- **modules/user/variables.tf**: Defines _what the module requires_.
+- **root variables.tf**: Defines _the values to pass_ to modules or resources.
+- **modules/user/outputs.tf**: Exposes internal values like `user_created`.
+- **root outputs.tf**: Optionally re-exports module outputs for visibility or downstream use.
+
+## Notes
+
+- Terraform runs on your local machine and connects to the VM via SSH.
+- The VM shares the project folder at /vagrant.
+- .terraform.lock.hcl is committed to lock provider versions.
+- The .vagrant/ directory is ignored by Git as it contains machine-specific data.
+
+## Cleanup
+
+To stop and remove the VM: ```vagrant destroy -f```
+To clean up Terraform resources: ```terraform destroy```
