@@ -2,13 +2,26 @@
 
 
 terraform {
-  required_providers {
-    null = {
-      source = "hashicorp/null"
-      version = "~> 3.0"
+    required_providers {
+        virtualbox = {
+            source  = "terra-farm/virtualbox"
+            version = "0.2.2-alpha.1"
+        }
+        null = {
+            source  = "hashicorp/null"
+            version = "~> 3.0"
+        }
     }
-  }
 }
+
+module "vm" {
+    source         = "./modules/vm"
+    vm_name        = "steampunk-dev"
+    vm_image_path  = var.vm_image_path
+    vm_cpus        = var.vm_cpus
+    vm_memory      = var.vm_memory
+}
+
 
 module "create_users" {
     for_each = var.users

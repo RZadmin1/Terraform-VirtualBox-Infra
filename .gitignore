@@ -43,4 +43,5 @@ terraform.rc
 *.pid
 *.swp
 *.vdi
-/keys
+/keys/*
+/images/*
