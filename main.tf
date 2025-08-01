@@ -24,9 +24,9 @@ module "vm" {
 
 
 module "create_users" {
-    for_each = var.users
-
     source           = "./modules/user"
+    for_each = { for user in var.users : user.username => user }
+    
     host             = var.host
     port             = var.port
     user             = var.user
